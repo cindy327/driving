@@ -2,7 +2,7 @@
   const $ = (s) => document.querySelector(s);
   const $$ = (s) => [...document.querySelectorAll(s)];
   const LABELS = { observation:'관찰', signal:'신호', control:'조작', judgment:'판단' };
-  const ACTION_LABELS = { brake:'브레이크', accel:'가속', gearP:'P', gearD:'D', gearR:'R', leftSignal:'좌측 깜빡이', rightSignal:'우측 깜빡이', hazard:'비상등', mirror:'거울 확인', blindSpot:'사각지대', look:'전방 확인', laneLeft:'왼쪽 이동', laneRight:'오른쪽 이동' };
+  const ACTION_LABELS = { brake:'브레이크', accel:'가속', gearP:'P', gearD:'D', gearR:'R', leftSignal:'좌측 깜빡이', rightSignal:'우측 깜빡이', hazard:'비상등', mirror:'거울 확인', blindSpot:'사각지대', look:'전방 확인', laneLeft:'왼쪽 이동', laneRight:'오른쪽 이동', horn:'클락션' };
 
   const levels = [
     {id:0,icon:'🪪',title:'운전석 기초',desc:'브레이크 · 기어 · 거울 · 방향지시등',steps:[
@@ -59,28 +59,30 @@
       {title:'도착했습니다.',hint:'완전히 정지하고 P를 선택합니다.',expect:'gearP',skill:'control'}]}
   ];
 
-  // 실도로 체크포인트: Google Street View가 가장 가까운 파노라마를 표시합니다.
+  // 실도로 체크포인트: 역/건물 POI 대신 도로 중앙 좌표를 사용합니다.
+  // Google Street View는 각 좌표에서 가장 가까운 실외 도로 파노라마를 표시하도록
+  // 역 출입구와 실내 파노라마에서 충분히 떨어진 지점을 선택했습니다.
   const routes = {
-    magok:{title:'마곡나루 실도로 · 초급',points:[
-      {name:'마곡나루역 주변',lat:37.5658213,lng:126.8276343,heading:75,mission:'브레이크를 밟고 D로 변경한 뒤 주변을 확인하세요.'},
-      {name:'마곡중앙로 진입',lat:37.56600,lng:126.82835,heading:75,mission:'차선을 유지하면서 횡단보도와 보행자를 먼저 찾아보세요.'},
-      {name:'마곡중앙로 직진',lat:37.56618,lng:126.82910,heading:78,mission:'앞차와 신호등 위치를 확인하고 안전거리를 생각하세요.'},
-      {name:'교차로 접근',lat:37.56636,lng:126.82990,heading:78,mission:'교차로 전에 어느 차로를 선택할지 미리 판단하세요.'},
-      {name:'마곡 도착점',lat:37.56652,lng:126.83065,heading:80,mission:'급한 차선변경 없이 현재 차로를 유지하며 마무리하세요.'}
+    seoulBasic:{title:'서울 실도로 · 초급',points:[
+      {name:'서울 서부 넓은 도로 1',lat:37.56600,lng:126.82835,heading:75,mission:'브레이크를 밟고 D로 변경한 뒤 차선과 전방 신호를 확인하세요.'},
+      {name:'서울 서부 넓은 도로 2',lat:37.56618,lng:126.82910,heading:78,mission:'횡단보도와 보행자를 먼저 찾고 저속으로 전진하세요.'},
+      {name:'서울 서부 교차로 접근',lat:37.56636,lng:126.82990,heading:78,mission:'교차로 진입 전에 정지선과 목적 차로를 미리 확인하세요.'},
+      {name:'서울 서부 직진 구간',lat:37.56652,lng:126.83065,heading:80,mission:'앞차와 충분한 간격을 유지하며 차선을 그대로 유지하세요.'},
+      {name:'서울 서부 다음 교차로',lat:37.56670,lng:126.83145,heading:80,mission:'길을 놓쳐도 급하게 차로를 바꾸지 않고 다음 경로를 선택하세요.'}
     ]},
-    yeongdeungpo:{title:'영등포 실도로 · 도심',points:[
-      {name:'영등포역 주변',lat:37.515560,lng:126.907780,heading:350,mission:'출발 전 버스·택시·보행자 움직임을 먼저 확인하세요.'},
-      {name:'역 앞 도로',lat:37.51615,lng:126.90760,heading:350,mission:'차로 수와 정지선 위치를 확인하세요.'},
-      {name:'도심 직진구간',lat:37.51682,lng:126.90738,heading:348,mission:'앞차만 보지 말고 교차로 안쪽까지 시선을 넓혀보세요.'},
-      {name:'복합 교차로 접근',lat:37.51745,lng:126.90712,heading:346,mission:'내가 갈 방향의 차로를 미리 고르고 방향지시등 시점을 생각하세요.'},
-      {name:'영등포 도착점',lat:37.51810,lng:126.90688,heading:345,mission:'길을 놓쳐도 급차선변경하지 않는다는 원칙을 기억하세요.'}
+    seoulCity:{title:'서울 실도로 · 도심',points:[
+      {name:'서울 서남권 도심도로 1',lat:37.51615,lng:126.90760,heading:350,mission:'버스·택시·보행자 움직임과 정지선 위치를 먼저 확인하세요.'},
+      {name:'서울 서남권 도심도로 2',lat:37.51682,lng:126.90738,heading:348,mission:'앞차만 보지 말고 교차로 안쪽 흐름까지 시선을 넓혀보세요.'},
+      {name:'서울 서남권 복합 교차로',lat:37.51745,lng:126.90712,heading:346,mission:'목적 차로를 일찍 선택하고 방향지시등을 켤 시점을 판단하세요.'},
+      {name:'서울 서남권 직진 구간',lat:37.51810,lng:126.90688,heading:345,mission:'차량과 보행자가 많은 도심에서는 속도보다 관찰을 우선하세요.'},
+      {name:'서울 서남권 다음 구간',lat:37.51875,lng:126.90665,heading:344,mission:'급차선변경 없이 현재 차로를 유지하며 안전하게 진행하세요.'}
     ]},
-    gwangmyeong:{title:'광명 실도로 · 역세권',points:[
-      {name:'광명역 주변',lat:37.416390,lng:126.885000,heading:335,mission:'출발 전 넓은 도로의 차량 흐름과 합류 차량을 확인하세요.'},
-      {name:'역세권 진입도로',lat:37.41688,lng:126.88472,heading:334,mission:'차로를 유지하고 속도를 천천히 올려보세요.'},
-      {name:'넓은 직선구간',lat:37.41734,lng:126.88446,heading:334,mission:'속도보다 안전거리와 전방 흐름을 우선하세요.'},
-      {name:'교차로 전 구간',lat:37.41779,lng:126.88419,heading:333,mission:'교차로 전 미리 감속하고 목적 차로를 확인하세요.'},
-      {name:'광명 도착점',lat:37.41825,lng:126.88392,heading:333,mission:'뒤차 때문에 서두르지 말고 안전한 판단으로 마무리하세요.'}
+    gyeonggi:{title:'경기 실도로 · 초급',points:[
+      {name:'경기 광명권 넓은 도로 1',lat:37.41688,lng:126.88472,heading:334,mission:'출발 전 넓은 도로의 차량 흐름과 합류 차량을 확인하세요.'},
+      {name:'경기 광명권 넓은 도로 2',lat:37.41734,lng:126.88446,heading:334,mission:'차로를 유지하고 속도를 천천히 올리며 안전거리를 확보하세요.'},
+      {name:'경기 광명권 교차로 접근',lat:37.41779,lng:126.88419,heading:333,mission:'교차로 전에 미리 감속하고 내 차로의 진행 방향을 확인하세요.'},
+      {name:'경기 광명권 직진 구간',lat:37.41825,lng:126.88392,heading:333,mission:'뒤차 때문에 서두르지 말고 전방 흐름에 맞춰 주행하세요.'},
+      {name:'경기 광명권 다음 구간',lat:37.41872,lng:126.88365,heading:332,mission:'합류·차선변경 상황에서는 미러와 사각지대를 먼저 확인하세요.'}
     ]}
   };
 
@@ -99,8 +101,98 @@
     levelEyebrow:$('#levelEyebrow'),missionTitle:$('#missionTitle'),stepCount:$('#stepCount'),scoreLabel:$('#scoreLabel'),stepTitle:$('#stepTitle'),stepHint:$('#stepHint'),feedback:$('#feedback'),quizArea:$('#quizArea'),nextStepBtn:$('#nextStepBtn'),sequenceChips:$('#sequenceChips'),speedValue:$('#speedValue'),gearValue:$('#gearValue'),signalValue:$('#signalValue'),
     simLight:$('#simLight'),simMessage:$('#simMessage'),simCrosswalk:$('#simCrosswalk'),simLead:$('#simLead'),simPed:$('#simPed'),simEmergency:$('#simEmergency'),
     resultTitle:$('#resultTitle'),resultScore:$('#resultScore'),resultMessage:$('#resultMessage'),resultSkills:$('#resultSkills'),replayBtn:$('#replayBtn'),continueBtn:$('#continueBtn'),
-    googleStatus:$('#googleStatus'),googleSetup:$('#googleSetup'),realTraining:$('#realTraining'),realRouteTitle:$('#realRouteTitle'),streetViewFrame:$('#streetViewFrame'),satelliteFrame:$('#satelliteFrame'),realLevelLabel:$('#realLevelLabel'),realPointName:$('#realPointName'),realMissionBubble:$('#realMissionBubble'),realSpeed:$('#realSpeed'),clusterSpeed:$('#clusterSpeed'),clusterGear:$('#clusterGear'),clusterSignal:$('#clusterSignal'),wheelGuide:$('#wheelGuide'),realFeedback:$('#realFeedback'),checkpointLabel:$('#checkpointLabel'),realPrevBtn:$('#realPrevBtn'),realNextBtn:$('#realNextBtn')
+    googleStatus:$('#googleStatus'),googleSetup:$('#googleSetup'),realTraining:$('#realTraining'),realRouteTitle:$('#realRouteTitle'),streetViewFrame:$('#streetViewFrame'),satelliteFrame:$('#satelliteFrame'),realLevelLabel:$('#realLevelLabel'),realPointName:$('#realPointName'),realMissionBubble:$('#realMissionBubble'),realSpeed:$('#realSpeed'),clusterSpeed:$('#clusterSpeed'),clusterGear:$('#clusterGear'),clusterSignal:$('#clusterSignal'),wheelTouchZone:$('#wheelTouchZone'),steeringWheelImage:$('#steeringWheelImage'),hornButton:$('#hornButton'),wheelAngleLabel:$('#wheelAngleLabel'),realFeedback:$('#realFeedback'),checkpointLabel:$('#checkpointLabel'),realPrevBtn:$('#realPrevBtn'),realNextBtn:$('#realNextBtn')
   };
+
+  let audioCtx=null;
+  function vibrate(pattern){
+    try{if('vibrate' in navigator) navigator.vibrate(pattern)}catch{}
+  }
+  function playHorn(){
+    try{
+      const AC=window.AudioContext||window.webkitAudioContext;
+      if(!AC)return;
+      audioCtx??=new AC();
+      if(audioCtx.state==='suspended')audioCtx.resume();
+      const now=audioCtx.currentTime;
+      const master=audioCtx.createGain();
+      master.gain.setValueAtTime(0.0001,now);
+      master.gain.exponentialRampToValueAtTime(0.18,now+0.018);
+      master.gain.setValueAtTime(0.18,now+0.24);
+      master.gain.exponentialRampToValueAtTime(0.0001,now+0.38);
+      master.connect(audioCtx.destination);
+      [410,520].forEach((freq,i)=>{
+        const osc=audioCtx.createOscillator();
+        const gain=audioCtx.createGain();
+        osc.type=i?'square':'sawtooth';
+        osc.frequency.setValueAtTime(freq,now);
+        gain.gain.value=i?0.36:0.5;
+        osc.connect(gain); gain.connect(master);
+        osc.start(now); osc.stop(now+0.39);
+      });
+      vibrate([18,25,18]);
+    }catch{}
+  }
+  function hapticForPedal(action){
+    if(action==='brake')vibrate([42]);
+    else if(action==='accel')vibrate([22]);
+  }
+  function setWheelAngle(value,{feedback=true}={}){
+    if(!els.steeringWheelImage)return;
+    real.wheel=Math.max(-120,Math.min(120,Math.round(value)));
+    els.steeringWheelImage.style.transform=`rotate(${real.wheel}deg)`;
+    els.wheelTouchZone?.setAttribute('aria-valuenow',String(real.wheel));
+    if(els.wheelAngleLabel)els.wheelAngleLabel.textContent=`${real.wheel>0?'+':''}${real.wheel}°`;
+    if(feedback){
+      const dir=real.wheel<-8?'왼쪽':real.wheel>8?'오른쪽':'중앙';
+      setRealFeedback(`핸들 ${dir} ${Math.abs(real.wheel)}°. 시선은 먼저 진행 방향을 향하게 하세요.`,'good');
+    }
+  }
+  function initSteeringWheel(){
+    const zone=els.wheelTouchZone;
+    if(!zone)return;
+    let dragging=false,startPointerAngle=0,startWheel=0;
+    const pointerAngle=e=>{
+      const r=zone.getBoundingClientRect();
+      const cx=r.left+r.width/2,cy=r.top+r.height/2;
+      return Math.atan2(e.clientY-cy,e.clientX-cx)*180/Math.PI;
+    };
+    const norm=d=>{while(d>180)d-=360;while(d<-180)d+=360;return d};
+    zone.addEventListener('pointerdown',e=>{
+      if(e.target.closest('.horn-hotspot'))return;
+      e.preventDefault();e.stopPropagation();
+      dragging=true;startPointerAngle=pointerAngle(e);startWheel=real.wheel;
+      zone.classList.add('dragging');
+      try{zone.setPointerCapture(e.pointerId)}catch{}
+    });
+    zone.addEventListener('pointermove',e=>{
+      if(!dragging)return;
+      e.preventDefault();e.stopPropagation();
+      const delta=norm(pointerAngle(e)-startPointerAngle);
+      setWheelAngle(startWheel+delta*1.25,{feedback:false});
+    });
+    const end=e=>{
+      if(!dragging)return;
+      e.preventDefault();e.stopPropagation();dragging=false;zone.classList.remove('dragging');
+      setWheelAngle(real.wheel,{feedback:true});
+      vibrate([12]);
+    };
+    zone.addEventListener('pointerup',end);
+    zone.addEventListener('pointercancel',end);
+    zone.addEventListener('lostpointercapture',()=>{dragging=false;zone.classList.remove('dragging')});
+    zone.addEventListener('keydown',e=>{
+      if(e.key==='ArrowLeft'||e.key==='ArrowRight'){
+        e.preventDefault();
+        setWheelAngle(real.wheel+(e.key==='ArrowLeft'?-10:10));
+      }else if(e.key==='Home'){
+        e.preventDefault();setWheelAngle(0);
+      }
+    });
+    // Google iframe beneath the cockpit must never receive a horn/wheel touch.
+    ['pointerdown','pointerup','click','touchstart','touchend'].forEach(type=>{
+      els.hornButton?.addEventListener(type,e=>{e.preventDefault();e.stopPropagation()}, {passive:false});
+    });
+  }
 
   function save(){localStorage.setItem('drivingLabStateV3',JSON.stringify(state))}
   function isUnlocked(id){return id===0||state.completed.includes(id-1)||state.completed.includes(id)}
@@ -116,7 +208,7 @@
   function renderSequence(step){if(!step.sequence){els.sequenceChips.classList.add('hidden');els.sequenceChips.innerHTML='';return}els.sequenceChips.classList.remove('hidden');els.sequenceChips.innerHTML=step.sequence.map((a,i)=>`<span class="sequence-chip ${i<training.sequenceIndex?'done':''}">${i+1}. ${ACTION_LABELS[a]}</span>`).join('')}
   function applyScene(scene){els.simMessage.textContent=scene.message||training.level.title;els.simLight.className=`sim-light ${scene.light||'green'}`;els.simCrosswalk.classList.toggle('hidden',!scene.crosswalk);els.simLead.classList.toggle('hidden',!scene.leadCar);els.simPed.classList.toggle('hidden',!scene.pedestrian);els.simEmergency.classList.toggle('hidden',!scene.emergency)}
   function updateCar(){els.speedValue.textContent=car.speed;els.gearValue.textContent=car.gear;els.signalValue.textContent=car.signal}
-  function handleAction(action){if(!training.level)return;if(action==='brake')car.speed=Math.max(0,car.speed-15);if(action==='accel')car.speed=car.gear==='P'?0:Math.min(80,car.speed+10);if(action==='gearP'){car.gear='P';car.speed=0}if(action==='gearD')car.gear='D';if(action==='gearR')car.gear='R';if(action==='leftSignal')car.signal='◀';if(action==='rightSignal')car.signal='▶';if(action==='hazard')car.signal='⚠';updateCar();const step=training.level.steps[training.step];if(step.quiz)return;if(step.sequence){handleSequence(action,step);return}if(!step.expect)return;if(action===step.expect)succeedStep(step,'좋아요. 안전한 순서로 처리했습니다.');else failStep(step,'지금 미션과 다른 조작입니다. 힌트를 확인하고 다시 해보세요.')}
+  function handleAction(action){if(!training.level)return;if(action==='horn'){playHorn();setFeedback('클락션을 울렸습니다. 실제 도로에서는 위험을 알릴 필요가 있을 때만 사용하세요.','neutral');return}if(action==='brake'){hapticForPedal(action);car.speed=Math.max(0,car.speed-15)}if(action==='accel'){hapticForPedal(action);car.speed=car.gear==='P'?0:Math.min(80,car.speed+10)}if(action==='gearP'){car.gear='P';car.speed=0}if(action==='gearD')car.gear='D';if(action==='gearR')car.gear='R';if(action==='leftSignal')car.signal='◀';if(action==='rightSignal')car.signal='▶';if(action==='hazard')car.signal='⚠';updateCar();const step=training.level.steps[training.step];if(step.quiz)return;if(step.sequence){handleSequence(action,step);return}if(!step.expect)return;if(action===step.expect)succeedStep(step,'좋아요. 안전한 순서로 처리했습니다.');else failStep(step,'지금 미션과 다른 조작입니다. 힌트를 확인하고 다시 해보세요.')}
   function handleSequence(action,step){const expected=step.sequence[training.sequenceIndex];if(action===expected){training.sequenceIndex++;renderSequence(step);if(training.sequenceIndex===step.sequence.length)succeedStep(step,'순서를 정확히 완료했습니다.');else setFeedback(`좋습니다. 다음은 「${ACTION_LABELS[step.sequence[training.sequenceIndex]]}」입니다.`,'good')}else{training.sequenceIndex=0;renderSequence(step);failStep(step,`순서가 바뀌었습니다. 처음부터 다시: ${step.sequence.map(a=>ACTION_LABELS[a]).join(' → ')}`,4)}}
   function judgeQuiz(ok,button,step){$$('.quiz-option').forEach(x=>x.disabled=true);if(ok){button.textContent='✅ '+button.textContent;succeedStep(step,'정확합니다. 안전을 우선하는 판단입니다.')}else{button.textContent='❌ '+button.textContent;failStep(step,'위험할 수 있는 선택입니다. 힌트를 다시 확인하세요.',10);els.nextStepBtn.classList.remove('hidden')}}
   function succeedStep(step,msg){record(step.skill,true);setFeedback(msg,'good');els.nextStepBtn.classList.remove('hidden')}
@@ -130,12 +222,43 @@
   function initGoogleStatus(){if(googleKey){els.googleStatus.textContent='Google 준비됨';els.googleStatus.classList.add('ready');els.googleSetup.classList.add('hidden')}else{els.googleStatus.textContent='API 키 필요';els.googleStatus.classList.add('wait');els.googleSetup.classList.remove('hidden')}}
   function streetViewUrl(point){const p=new URLSearchParams({key:googleKey,location:`${point.lat},${point.lng}`,heading:String(point.heading||0),pitch:'0',fov:'85'});return `https://www.google.com/maps/embed/v1/streetview?${p.toString()}`}
   function satelliteUrl(point){const p=new URLSearchParams({key:googleKey,center:`${point.lat},${point.lng}`,zoom:'18',maptype:'satellite'});return `https://www.google.com/maps/embed/v1/view?${p.toString()}`}
-  function startRealRoute(key){if(!googleKey){els.googleSetup.classList.remove('hidden');els.googleSetup.scrollIntoView({behavior:'smooth',block:'center'});return}real={routeKey:key,index:0,speed:0,gear:'P',signal:'—',wheel:0};els.realTraining.classList.remove('hidden');els.realRouteTitle.textContent=routes[key].title;renderRealPoint();els.realTraining.scrollIntoView({behavior:'smooth',block:'start'})}
+  function startRealRoute(key){if(!googleKey){els.googleSetup.classList.remove('hidden');els.googleSetup.scrollIntoView({behavior:'smooth',block:'center'});return}real={routeKey:key,index:0,speed:0,gear:'P',signal:'—',wheel:0};els.realTraining.classList.remove('hidden');els.realRouteTitle.textContent=routes[key].title;setWheelAngle(0,{feedback:false});renderRealPoint();els.realTraining.scrollIntoView({behavior:'smooth',block:'start'})}
   function renderRealPoint(){const route=routes[real.routeKey],point=route.points[real.index];els.streetViewFrame.src=streetViewUrl(point);els.satelliteFrame.src=satelliteUrl(point);els.realLevelLabel.textContent=`실도로 ${real.index+1}/${route.points.length}`;els.realPointName.textContent=point.name;els.realMissionBubble.innerHTML=`<span>현재 미션</span><strong>${point.mission}</strong>`;els.checkpointLabel.textContent=`${real.index+1} / ${route.points.length}`;els.realPrevBtn.disabled=real.index===0;els.realNextBtn.textContent=real.index===route.points.length-1?'처음으로':'다음 지점';updateRealHud()}
   function updateRealHud(){els.realSpeed.textContent=real.speed;els.clusterSpeed.textContent=real.speed;els.clusterGear.textContent=real.gear;els.clusterSignal.textContent=real.signal}
   function setRealFeedback(msg,type='neutral'){els.realFeedback.textContent=msg;els.realFeedback.className=`feedback ${type}`}
   function advanceReal(delta=1){const route=routes[real.routeKey];let next=real.index+delta;if(next>=route.points.length)next=0;if(next<0)next=0;real.index=next;renderRealPoint()}
-  function handleRealAction(action){if(!real.routeKey)return;if(action==='gearD'){real.gear='D';setRealFeedback('D로 변경했습니다. 브레이크에서 발을 천천히 떼고 주변을 확인하세요.','good')}else if(action==='gearP'){real.gear='P';real.speed=0;setRealFeedback('P로 변경했습니다. 완전히 정차한 뒤 사용하는 습관을 기억하세요.','good')}else if(action==='gearR'){real.gear='R';real.speed=0;setRealFeedback('R입니다. 실제 후진 시 거울과 직접 확인을 반복하세요.','good')}else if(action==='gearN'){real.gear='N';setRealFeedback('N이 선택되었습니다. 평소 주행에서는 차량 매뉴얼과 상황에 맞게 사용하세요.')}else if(action==='brake'){real.speed=Math.max(0,real.speed-12);setRealFeedback(real.speed===0?'완전히 정지했습니다.':'감속 중입니다. 미리 부드럽게 제동하는 감각을 익히세요.','good')}else if(action==='accel'){if(real.gear!=='D'){setRealFeedback('먼저 브레이크를 밟은 상태에서 D를 선택하세요.','bad');return}real.speed=Math.min(50,real.speed+10);setRealFeedback('천천히 가속합니다. 실도로 화면이 다음 체크포인트로 이동합니다.','good');setTimeout(()=>advanceReal(1),260)}else if(action==='leftSignal'){real.signal='◀';setRealFeedback('좌측 방향지시등을 켰습니다. 거울과 사각지대를 함께 확인하세요.','good')}else if(action==='rightSignal'){real.signal='▶';setRealFeedback('우측 방향지시등을 켰습니다. 횡단보도와 보행자를 확인하세요.','good')}else if(action==='hazard'){real.signal='⚠';setRealFeedback('비상등을 켰습니다. 비상정차 등 필요한 상황에서 사용합니다.','good')}else if(action==='mirror'){setRealFeedback('미러 확인 완료. 다음에는 고개를 움직여 사각지대도 확인하는 습관을 만드세요.','good')}else if(action==='steerLeft'||action==='steerRight'){real.wheel=Math.max(-70,Math.min(70,real.wheel+(action==='steerLeft'?-18:18)));els.wheelGuide.classList.add('active');els.wheelGuide.style.transform=`rotate(${real.wheel}deg)`;setTimeout(()=>els.wheelGuide.classList.remove('active'),450);setRealFeedback(action==='steerLeft'?'핸들을 왼쪽으로 돌렸습니다. 실제로는 시선이 먼저 진행방향을 향해야 합니다.':'핸들을 오른쪽으로 돌렸습니다. 회전 후 핸들이 돌아오는 양을 느끼는 연습이 중요합니다.','good')}updateRealHud()}
+  function handleRealAction(action){
+    if(!real.routeKey)return;
+    if(action==='horn'){
+      playHorn();
+      setRealFeedback('클락션을 울렸습니다. 위험을 알릴 필요가 있을 때만 짧게 사용하세요.','neutral');
+      return;
+    }
+    if(action==='gearD'){
+      real.gear='D';setRealFeedback('D로 변경했습니다. 브레이크에서 발을 천천히 떼고 주변을 확인하세요.','good');
+    }else if(action==='gearP'){
+      real.gear='P';real.speed=0;setRealFeedback('P로 변경했습니다. 완전히 정차한 뒤 사용하는 습관을 기억하세요.','good');
+    }else if(action==='gearR'){
+      real.gear='R';real.speed=0;setRealFeedback('R입니다. 실제 후진 시 거울과 직접 확인을 반복하세요.','good');
+    }else if(action==='gearN'){
+      real.gear='N';setRealFeedback('N이 선택되었습니다. 평소 주행에서는 차량 매뉴얼과 상황에 맞게 사용하세요.');
+    }else if(action==='brake'){
+      hapticForPedal(action);real.speed=Math.max(0,real.speed-12);setRealFeedback(real.speed===0?'완전히 정지했습니다.':'감속 중입니다. 미리 부드럽게 제동하는 감각을 익히세요.','good');
+    }else if(action==='accel'){
+      hapticForPedal(action);
+      if(real.gear!=='D'){setRealFeedback('먼저 브레이크를 밟은 상태에서 D를 선택하세요.','bad');return}
+      real.speed=Math.min(50,real.speed+10);setRealFeedback('천천히 가속합니다. 실도로 화면이 다음 체크포인트로 이동합니다.','good');setTimeout(()=>advanceReal(1),260);
+    }else if(action==='leftSignal'){
+      real.signal='◀';setRealFeedback('좌측 방향지시등을 켰습니다. 거울과 사각지대를 함께 확인하세요.','good');
+    }else if(action==='rightSignal'){
+      real.signal='▶';setRealFeedback('우측 방향지시등을 켰습니다. 횡단보도와 보행자를 확인하세요.','good');
+    }else if(action==='hazard'){
+      real.signal='⚠';setRealFeedback('비상등을 켰습니다. 비상정차 등 필요한 상황에서 사용합니다.','good');
+    }else if(action==='mirror'){
+      setRealFeedback('미러 확인 완료. 다음에는 고개를 움직여 사각지대도 확인하는 습관을 만드세요.','good');
+    }
+    updateRealHud();
+  }
 
   $$('#levelGrid').forEach(()=>{});
   $$('.control-deck [data-action]').forEach(b=>b.addEventListener('click',()=>handleAction(b.dataset.action)));
@@ -145,10 +268,10 @@
   els.continueBtn.onclick=()=>{if(lastCompletedLevel!=null&&lastCompletedLevel<levels.length-1)startLevel(lastCompletedLevel+1);else{els.resultSection.classList.add('hidden');window.scrollTo({top:0,behavior:'smooth'})}};
   $('#resetBtn').onclick=()=>{if(confirm('훈련 진행도와 점수를 모두 초기화할까요?')){localStorage.removeItem('drivingLabStateV3');location.reload()}};
   $$('.region-btn').forEach(b=>b.addEventListener('click',()=>startRealRoute(b.dataset.route)));
-  $$('[data-real-action]').forEach(b=>b.addEventListener('click',()=>handleRealAction(b.dataset.realAction)));
+  $$('[data-real-action]').forEach(b=>b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();handleRealAction(b.dataset.realAction)}));
   $('#closeRealBtn').onclick=()=>els.realTraining.classList.add('hidden');
   els.realPrevBtn.onclick=()=>advanceReal(-1);els.realNextBtn.onclick=()=>advanceReal(1);
   document.addEventListener('keydown',e=>{const m={ArrowDown:'brake',ArrowUp:'accel',q:'leftSignal',e:'rightSignal',' ':'hazard',m:'mirror',b:'blindSpot'};if(m[e.key]&&!els.trainingSection.classList.contains('hidden')){e.preventDefault();handleAction(m[e.key])}});
 
-  initGoogleStatus();renderLevels();updateCar();
+  initSteeringWheel();initGoogleStatus();renderLevels();updateCar();
 })();
