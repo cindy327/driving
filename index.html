@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="format-detection" content="telephone=no" />
-  <title>도로연습 LAB · Galaxy S25 Mobile V3.2</title>
+  <title>도로연습 LAB · Galaxy S25 Mobile V3.3</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -24,7 +24,7 @@
     <main>
       <section class="hero-card">
         <div>
-          <span class="pill">V3.2 · Galaxy S25 Mobile + Google</span>
+          <span class="pill">V3.3 · Galaxy S25 Mobile + Haptic + Google</span>
           <h2>실제 운전석처럼 보고,<br>실제 거리를 미리 달려보기</h2>
           <p>2025년형 준중형 SUV 감성의 운전석 UI에 Google Street View와 위성 지도를 결합했습니다. 기본 미션은 API 없이도 연습할 수 있고, Google 키를 넣으면 서울·경기 실제 도로 연습 모드가 열립니다. 역이나 건물 내부가 아니라 도로 중앙 체크포인트를 사용합니다.</p>
         </div>
@@ -99,9 +99,12 @@
           <button class="hotspot pedal-hotspot brake" data-real-action="brake" aria-label="브레이크">BRAKE</button>
           <button class="hotspot pedal-hotspot accel" data-real-action="accel" aria-label="가속 페달">ACCEL</button>
 
-          <button class="wheel-control left" data-real-action="steerLeft" aria-label="핸들 왼쪽">◀</button>
-          <button class="wheel-control right" data-real-action="steerRight" aria-label="핸들 오른쪽">▶</button>
-          <div id="wheelGuide" class="wheel-guide"></div>
+          <div id="wheelTouchZone" class="wheel-touch-zone" role="slider" aria-label="핸들 돌리기" aria-valuemin="-120" aria-valuemax="120" aria-valuenow="0" tabindex="0">
+            <div class="wheel-inner-mask" aria-hidden="true"></div>
+            <img id="steeringWheelImage" src="assets/steering-wheel.png" class="steering-wheel-image" alt="돌릴 수 있는 SUV 핸들" draggable="false" />
+            <button id="hornButton" class="horn-hotspot" data-real-action="horn" aria-label="클락션 울리기">📣<span>클락션</span></button>
+            <div id="wheelAngleLabel" class="wheel-angle-label" aria-hidden="true">0°</div>
+          </div>
         </div>
 
         <div class="real-controls">
@@ -159,6 +162,7 @@
           <div class="deck-row indicators">
             <button data-action="leftSignal">⬅️<span>좌측 깜빡이</span></button>
             <button data-action="hazard">⚠️<span>비상등</span></button>
+            <button data-action="horn">📣<span>클락션</span></button>
             <button data-action="rightSignal">➡️<span>우측 깜빡이</span></button>
           </div>
           <div class="deck-row primary-driving">
